@@ -1,4 +1,4 @@
-
+import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
@@ -22,7 +22,7 @@ function PopoverContent({
   ...props
 }) {
   return (
-    <PopoverPrimitive.Portal>
+    (<PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
         data-slot="popover-content"
         align={align}
@@ -32,7 +32,7 @@ function PopoverContent({
           className
         )}
         {...props} />
-    </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Portal>)
   );
 }
 

@@ -1,18 +1,25 @@
-import { useState } from "react";
 import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useState } from "react";
+import tailwindStyles from "../index.css?inline";
 import { MessageCircleIcon, StarIcon } from "lucide-react";
-import { Separator } from "./ui/separator";
 
 const Widget = () => {
+  const [rating, setRating] = useState(3);
   const [submitted, setSubmitted] = useState(false);
-  const [rating, setRating] = useState(5);
-  const onSelectstart = (index) => {
+
+  const onSelectStar = (index) => {
     setRating(index + 1);
   };
+
   const submit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -24,87 +31,102 @@ const Widget = () => {
     };
     setSubmitted(true);
     console.log(data);
-  }
+  };
 
   return (
     <>
-      <div className="widget fixed bottom-4 right-4 z-50">
+      <style>{tailwindStyles}</style>
+      <div className="fixed bottom-4 right-4 z-50">
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              type="button"
-              className="rounded-full shadow-lg transition-transform hover:scale-105"
+              variant="default"
+              className="rounded-full shadow-lg px-5 py-2 gap-2 bg-primary text-white hover:scale-105 transition-transform duration-200"
             >
-              <MessageCircleIcon className="mr-2 h-5 w-5" />
+              <MessageCircleIcon className="h-5 w-5" />
               Feedback
             </Button>
           </PopoverTrigger>
-          <PopoverContent className=" widget rounded-lg bg-card p-4 shadow-lg w-full max-w-md">
+          <PopoverContent className="rounded-xl bg-white dark:bg-zinc-900 shadow-2xl w-[380px] p-5 border border-muted">
+            <style>{tailwindStyles}</style>
             {submitted ? (
-              <div>
-                <h3 className="text-lg font-bold">
-                  Thank you for your feedback!
+              <div className="space-y-3 text-center">
+                <h3 className="text-xl font-semibold text-primary">
+                  🎉 Thank You!
                 </h3>
-                <p className="mt-4">
-                  We appreciate your feedback. It helps us improve our product
-                  and provide better service to our customers.
+                <p className="text-muted-foreground text-sm">
+                  Your feedback helps us improve. We really appreciate your
+                  time!
                 </p>
               </div>
             ) : (
-              <div>
-                <h3 className="text-lg font-bold">Send us your feedback</h3>
-                <form className="space-y-2" onSubmit={submit}>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Enter your name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                      />
-                    </div>
+              <form onSubmit={submit} className="space-y-5">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-1">
+                    Send Feedback
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    We’d love to hear your thoughts!
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name">Name</Label>
+                    <Input id="name" placeholder="John Doe" required />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="feedback">Feedback</Label>
-                    <Textarea
-                      id="feedback"
-                      placeholder="Tell us what you think"
-                      className="min-h-[100px]"
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      required
                     />
                   </div>
-                  <div className="">
-                    <div>
-                      {[...Array(5)].map((_, index) => (
-                        <StarIcon
-                          key={index}
-                          className={`h-5 w-5 cursor ${
-                            rating > index
-                              ? "fill-primary"
-                              : "fill-muted stroke-muted-foreground"
-                          }`}
-                          onClick={() => onSelectstart(index)}
-                        />
-                      ))}
-                    </div>
-                    <Button type="submit">Submit</Button>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="feedback">Your Feedback</Label>
+                  <Textarea
+                    id="feedback"
+                    placeholder="Let us know what you think..."
+                    className="min-h-[100px]"
+                    required
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, index) => (
+                      <StarIcon
+                        key={index}
+                        className={`h-5 w-5 cursor-pointer transition-colors ${
+                          rating > index
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-muted stroke-muted-foreground hover:fill-yellow-300 hover:text-yellow-300"
+                        }`}
+                        onClick={() => onSelectStar(index)}
+                      />
+                    ))}
                   </div>
-                </form>
-              </div>
+                  <Button
+                    type="submit"
+                    className="px-4 text-white bg-primary hover:bg-primary/90"
+                  >
+                    Submit
+                  </Button>
+                </div>
+              </form>
             )}
             <Separator className="my-4" />
-            <div className="text-gray-600">
+            <div className="text-center text-xs text-muted-foreground">
               Powered by{" "}
-              {/* <a
+              <a
                 href="https://nexx-saas.vercel.app/"
                 target="_blank"
+                rel="noreferrer"
                 className="text-indigo-600 hover:underline"
               >
-                Nexx ⚡️ */}
-              {/* </a> */}
+                Widgetly ⚡️
+              </a>
             </div>
           </PopoverContent>
         </Popover>
