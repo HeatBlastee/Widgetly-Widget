@@ -3,17 +3,19 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
 import tailwindStyles from "../index.css?inline";
+import supabase from "../supabaseClient";
 import { MessageCircleIcon, StarIcon } from "lucide-react";
 
-const Widget = () => {
+const Widget = ({ projectId }) => {
   const [rating, setRating] = useState(3);
+  const [hoverRating, setHoverRating] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
   const onSelectStar = (index) => {
@@ -24,13 +26,15 @@ const Widget = () => {
     e.preventDefault();
     const form = e.target;
     const data = {
+      p_project_id: projectId,
       p_user_name: form.name.value,
       p_user_email: form.email.value,
       p_message: form.feedback.value,
       p_rating: rating,
     };
+    const { data: returnedData } = await supabase.rpc("add_feedback", data);
     setSubmitted(true);
-    console.log(data);
+    console.log(returnedData);
   };
 
   return (
@@ -39,95 +43,88 @@ const Widget = () => {
       <div className="fixed bottom-4 right-4 z-50">
         <Popover>
           <PopoverTrigger asChild>
-            <Button
-              variant="default"
-              className="rounded-full shadow-lg px-5 py-2 gap-2 bg-primary text-white hover:scale-105 transition-transform duration-200"
-            >
-              <MessageCircleIcon className="h-5 w-5" />
+            <Button className="rounded-full shadow-lg transition-transform hover:scale-105 bg-indigo-600 hover:bg-indigo-700 text-white">
+              <MessageCircleIcon className="mr-2 h-5 w-5" />
               Feedback
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="rounded-xl bg-white dark:bg-zinc-900 shadow-2xl w-[380px] p-5 border border-muted">
+          <PopoverContent className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
             <style>{tailwindStyles}</style>
             {submitted ? (
-              <div className="space-y-3 text-center">
-                <h3 className="text-xl font-semibold text-primary">
-                  🎉 Thank You!
+              <div className="space-y-4 text-center">
+                <h3 className="text-xl font-semibold text-green-600">
+                  🎉 Thank you for your feedback!
                 </h3>
-                <p className="text-muted-foreground text-sm">
-                  Your feedback helps us improve. We really appreciate your
-                  time!
+                <p className="text-gray-700">
+                  We really appreciate it. Your insights help us improve.
                 </p>
               </div>
             ) : (
-              <form onSubmit={submit} className="space-y-5">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-1">
-                    Send Feedback
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    We’d love to hear your thoughts!
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" placeholder="John Doe" required />
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Send us your feedback
+                </h3>
+                <form className="space-y-4" onSubmit={submit}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label htmlFor="name">Name</Label>
+                      <Input id="name" placeholder="Your name" required />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
+                  <div className="space-y-1">
+                    <Label htmlFor="feedback">Message</Label>
+                    <Textarea
+                      id="feedback"
+                      placeholder="Write your feedback here..."
+                      className="min-h-[100px]"
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="feedback">Your Feedback</Label>
-                  <Textarea
-                    id="feedback"
-                    placeholder="Let us know what you think..."
-                    className="min-h-[100px]"
-                    required
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, index) => (
-                      <StarIcon
-                        key={index}
-                        className={`h-5 w-5 cursor-pointer transition-colors ${
-                          rating > index
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "fill-muted stroke-muted-foreground hover:fill-yellow-300 hover:text-yellow-300"
-                        }`}
-                        onClick={() => onSelectStar(index)}
-                      />
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, index) => (
+                        <StarIcon
+                          key={index}
+                          onMouseEnter={() => setHoverRating(index + 1)}
+                          onMouseLeave={() => setHoverRating(null)}
+                          onClick={() => onSelectStar(index)}
+                          className={`h-5 w-5 cursor-pointer transition-colors ${
+                            (hoverRating || rating) > index
+                              ? "fill-yellow-400 stroke-yellow-500"
+                              : "fill-gray-200 stroke-gray-400"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <Button
+                      type="submit"
+                      className="px-6 bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      Submit
+                    </Button>
                   </div>
-                  <Button
-                    type="submit"
-                    className="px-4 text-white bg-primary hover:bg-primary/90"
-                  >
-                    Submit
-                  </Button>
-                </div>
-              </form>
+                </form>
+              </div>
             )}
             <Separator className="my-4" />
-            <div className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-xs text-gray-500">
               Powered by{" "}
               <a
-                href="https://nexx-saas.vercel.app/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-indigo-600 hover:underline"
+                href="https://widgetly.vercel.app/"
+                className="font-medium text-indigo-600 hover:underline"
               >
                 Widgetly ⚡️
               </a>
-            </div>
+            </p>
           </PopoverContent>
         </Popover>
       </div>
